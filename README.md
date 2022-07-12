@@ -8,6 +8,6 @@ It will check every 5 seconds, which will usually guarantee you an appointment t
 (Keep in mind this only checks for available appointments, you have to book it yourself)
 
 ---
-© Vadim Isakov
+© Vadim Isakov and Nick Veld
 
 Licensed under the [GNU General Public License](LICENSE)
