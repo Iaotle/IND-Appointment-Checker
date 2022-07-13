@@ -2,9 +2,8 @@ import ctypes
 import json
 import re
 import time
+import urllib.request
 import warnings
-
-import requests
 
 
 class ExternalResourceHasChanged(Warning):
@@ -29,11 +28,15 @@ POSSIBLE_APPOINTMENT_TYPE_LIST = [
 
 
 def get(location: str, appointment_type: str, num_people: str, date: str) -> str:
-    url = f'https://oap.ind.nl/oap/api/desks/{location}/slots/?productKey={appointment_type}&persons={num_people}'
-    print(url)
-    response = requests.get(url)
+    url = 'https://oap.ind.nl/oap/api/desks/{}/slots/?productKey={}&persons={}'.format(
+        location, appointment_type, num_people,
+    )  # Not f-string because in such manner it is easier to copy the template into the browser address line
+    print('Requesting', url)
+    with urllib.request.urlopen(url) as web_content:
+        response = web_content.read()
+    response = response[6:]  # Some closing brackets is returned in the start of the response
 
-    js = json.loads(response.content[6:])
+    js = json.loads(response)
     try:
         js = js['data']
     except KeyError:
