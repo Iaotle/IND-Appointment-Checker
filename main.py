@@ -48,6 +48,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
             'There is no appointment slots at all. It is very suspicious. But it can be a temporary problem',
             category=ExternalResourceHasChanged,
         )
+        return ''
     earliest_appointment_info = js[0]
     try:
         earliest_date = earliest_appointment_info['date']
