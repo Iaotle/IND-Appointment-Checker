@@ -6,6 +6,7 @@ import urllib.request
 import warnings
 
 from os import system
+import datetime as dt
 
 
 class ExternalResourceHasChanged(Warning):
@@ -57,7 +58,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     except KeyError:
         raise ExternalResourceHasChanged('The IND resource has changed the appointment scheme.')
 
-    if earliest_date < date:
+    if dt.datetime.strptime(earliest_date, '%Y-%m-%d') < dt.datetime.strptime(date, '%d-%m-%Y'):
         return earliest_date
     else:
         return ""
