@@ -5,6 +5,8 @@ import time
 import urllib.request
 import warnings
 
+from os import system
+
 
 class ExternalResourceHasChanged(Warning):
     """Something has been changed on the IND resource"""
@@ -133,8 +135,12 @@ def main() -> None:
     while True:
         result = get(location, appointment_type, num_people, date)
         if result:
-            ctypes.windll.user32.MessageBoxW(0, result, 'Appointment found on ' + result, 1)
-            break
+            try:
+                ctypes.windll.user32.MessageBoxW(0, result, 'Appointment found on ' + result, 1)
+            except AttributeError:
+                system("osascript -e 'Tell application \"System Events\" to display dialog \"Appointment found on "+ str(result) 
+                       +"\" with title \"Task completed successfully\"'")
+           break
         time.sleep(5)
 
 
