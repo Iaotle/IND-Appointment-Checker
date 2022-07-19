@@ -5,8 +5,8 @@ import time
 import urllib.request
 import warnings
 
-from os import system
-import datetime as dt
+import os 
+import datetime 
 
 
 class ExternalResourceHasChanged(Warning):
@@ -58,7 +58,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     except KeyError:
         raise ExternalResourceHasChanged('The IND resource has changed the appointment scheme.')
 
-    if dt.datetime.strptime(earliest_date, '%Y-%m-%d') < dt.datetime.strptime(date, '%d-%m-%Y'):
+    if datetime.datetime.strptime(earliest_date, '%Y-%m-%d') < datetime.datetime.strptime(date, '%d-%m-%Y'):
         return earliest_date
     else:
         return ""
@@ -139,7 +139,7 @@ def main() -> None:
             try:
                 ctypes.windll.user32.MessageBoxW(0, result, 'Appointment found on ' + result, 1)
             except AttributeError:
-                system("osascript -e 'Tell application \"System Events\" to display dialog \"Appointment found on "+ str(result) 
+                os.system("osascript -e 'Tell application \"System Events\" to display dialog \"Appointment found on "+ str(result) 
                        +"\" with title \"Task completed successfully\"'")
            break
         time.sleep(5)
