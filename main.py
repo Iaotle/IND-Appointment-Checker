@@ -31,9 +31,11 @@ POSSIBLE_APPOINTMENT_TYPE_LIST = [
 
 
 def get(location: str, appointment_type: str, num_people: str, date: str) -> str:
+    # Not f-string because in such manner
+    # it is easier to copy the template into the browser address line
     url = 'https://oap.ind.nl/oap/api/desks/{}/slots/?productKey={}&persons={}'.format(
         location, appointment_type, num_people,
-    )  # Not f-string because in such manner it is easier to copy the template into the browser address line
+    )
     print('Requesting', url)
     with urllib.request.urlopen(url) as web_content:
         response = web_content.read()
@@ -43,12 +45,15 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     try:
         js = js['data']
     except KeyError:
-        raise ExternalResourceHasChanged('The IND resource is totally different, no "data" in the response.')
+        raise ExternalResourceHasChanged(
+            'The IND resource is totally different, no "data" in the response.'
+        )
     if not isinstance(js, list):
         raise ExternalResourceHasChanged('The IND resource has changed the data scheme.')
     if not js:
         warnings.warn(
-            'There is no appointment slots at all. It is very suspicious. But it can be a temporary problem',
+            'There is no appointment slots at all. It is very suspicious.'
+            ' But it can be a temporary problem',
             category=ExternalResourceHasChanged,
         )
         return ''
@@ -58,7 +63,10 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     except KeyError:
         raise ExternalResourceHasChanged('The IND resource has changed the appointment scheme.')
 
-    if datetime.datetime.strptime(earliest_date, '%Y-%m-%d') < datetime.datetime.strptime(date, '%d-%m-%Y'):
+    if (
+            datetime.datetime.strptime(earliest_date, '%Y-%m-%d')
+            < datetime.datetime.strptime(date, '%d-%m-%Y')
+    ):
         return earliest_date
     else:
         return ""
@@ -140,13 +148,15 @@ def main() -> None:
                 ctypes.windll.user32.MessageBoxW(0, result, 'Appointment found on ' + result, 1)
                 break
             elif platform.system() == 'Darwin':
-                os.system("osascript -e 'Tell application \"System Events\" to display dialog \"Appointment found on "+ str(result) 
-                       +"\" with title \"Task completed successfully\"'")
+                os.system(
+                    "osascript -e 'Tell application \"System Events\""
+                    + " to display dialog \"Appointment found on "+ str(result)
+                    + "\" with title \"Task completed successfully\"'"
+                )
                 break
             else:
-                #should probably figure out the way to print system messages on Linux
+                # should probably figure out the way to print system messages on Linux
                 print(f'Appointment found on {result}')
-                break
         time.sleep(5)
 
 
