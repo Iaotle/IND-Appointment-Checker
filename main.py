@@ -143,9 +143,10 @@ def main() -> None:
                 os.system("osascript -e 'Tell application \"System Events\" to display dialog \"Appointment found on "+ str(result) 
                        +"\" with title \"Task completed successfully\"'")
                 break
-           else:
+            else:
                 #should probably figure out the way to print system messages on Linux
                 print(f'Appointment found on {result}')
+                break
         time.sleep(5)
 
 
