@@ -136,12 +136,16 @@ def main() -> None:
     while True:
         result = get(location, appointment_type, num_people, date)
         if result:
-            try:
+            if platform.system() == 'Windows':
                 ctypes.windll.user32.MessageBoxW(0, result, 'Appointment found on ' + result, 1)
-            except AttributeError:
+                break
+            elif platform.system() == 'Darwin':
                 os.system("osascript -e 'Tell application \"System Events\" to display dialog \"Appointment found on "+ str(result) 
                        +"\" with title \"Task completed successfully\"'")
-           break
+                break
+           else:
+                #should probably figure out the way to print system messages on Linux
+                print(f'Appointment found on {result}')
         time.sleep(5)
 
 
