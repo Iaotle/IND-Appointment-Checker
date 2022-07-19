@@ -1,12 +1,12 @@
 import ctypes
+import datetime
 import json
+import os
+import platform
 import re
 import time
 import urllib.request
 import warnings
-
-import os 
-import datetime 
 
 
 class ExternalResourceHasChanged(Warning):
