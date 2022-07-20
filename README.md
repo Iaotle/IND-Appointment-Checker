@@ -10,6 +10,6 @@ If the script finds an appointment before your desired appointment date, it will
 (Keep in mind this only checks for available appointments, you have to book it yourself)
 
 ---
-© Vadim Isakov
+© Vadim Isakov, Nick Veld, iikotelnikov
 
 Licensed under the [GNU General Public License](LICENSE)
