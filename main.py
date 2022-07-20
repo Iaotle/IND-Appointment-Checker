@@ -1,21 +1,25 @@
-import requests
+import requests # requires requests component
 import json
 import time
-import ctypes
 import re
-import sys
 
 
 def get(location, type, people, date):
     url = 'https://oap.ind.nl/oap/api/desks/' + location + '/slots/?productKey=' + type + '&persons=' + people
-    print(url)
     response = requests.get(url)
 
     js = json.loads(response.content[6:])
-    earliestdate = js['data'][0]['date']
-    if earliestdate < date:
-        return earliestdate
+    #print(js)
+    if (len(js['data']) > 0):
+        earliestdate = js['data'][0]['date']
+        print('Earliest appointment: ' + earliestdate, end='\r')
+        #print(url)
+        if (earliestdate < date):
+            return earliestdate
+        else:
+            return 0
     else:
+        print('no appointments available')
         return 0
 
 
@@ -90,12 +94,12 @@ def get_num_people():
 
 def get_date():
     # thanks https://stackoverflow.com/questions/4709652/python-regex-to-match-dates
-    regex = '^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1])-([1-9]|0[1-9]|1[0-2])-([2-9][0-9][0-9][0-9])$'
+    regex = '^([2-9][0-9][0-9][0-9])-([1-9]|0[1-9]|1[0-2])-([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1])$'
 
-    print('Before which date would you like to have the appointment? (dd-mm-yyyy)')
+    print('Before which date would you like to have the appointment? (yyyy-mm-dd)')
     date = input()
     while not re.match(regex, date):
-        print('invalid date, format is dd-mm-yyyy')
+        print('invalid date, format is yyyy-mm-dd')
         date = input()
 
     return date
@@ -109,8 +113,9 @@ if __name__ == '__main__':
     date = get_date()
 
     while 1:
+        print('Earliest appointment', end='\x1b[1K\r')
         result = get(location, type, people, date)
-        if (result):
-            ctypes.windll.user32.MessageBoxW(0, result, 'Appointment found on ' + result, 1)
+        if result:
+            print("Appointment found on " + result) # todo popup
             break
         time.sleep(5)
