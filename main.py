@@ -68,7 +68,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     date = datetime.datetime.strptime(date, '%d-%m-%Y')
 
     if (earliest_date < date):
-        return earliest_date
+        return str(earliest_date)
     else:
         return ""
 
@@ -154,12 +154,12 @@ def main() -> None:
         if result:
             print('\a')  # makes a beep sound
             if platform.system() == 'Windows':
-                ctypes.windll.user32.MessageBoxW(0, str(result), 'Appointment found on ' + str(result), 1)
+                ctypes.windll.user32.MessageBoxW(0, result, 'Appointment found on ' + result, 1)
                 break
             elif platform.system() == 'Darwin':
                 os.system(
                     "osascript -e 'Tell application \"System Events\""
-                    + " to display dialog \"Appointment found on "+ str(result)
+                    + " to display dialog \"Appointment found on "+ result
                     + "\" with title \"Task completed successfully\"'"
                 )
                 break
