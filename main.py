@@ -36,7 +36,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     url = 'https://oap.ind.nl/oap/api/desks/{}/slots/?productKey={}&persons={}'.format(
         location, appointment_type, num_people,
     )
-    print('Requesting', url)
+    # print('Requesting', url)
     with urllib.request.urlopen(url) as web_content:
         response = web_content.read()
     response = response[6:]  # Some closing brackets are returned in the start of the response
@@ -70,6 +70,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     if (earliest_date < date):
         return str(earliest_date)
     else:
+        print("Earliest appointment on " + str(earliest_date), end='\r')
         return ""
 
 
@@ -137,7 +138,8 @@ def get_date() -> str:
 def main() -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
     print('|‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾|')
-    print('| IND Appointment Checker by Iaotle, NickVeld and iikotelnikov |')
+    print('|                    IND Appointment Checker                   |')
+    print('|             by Iaotle, NickVeld and iikotelnikov             |')
     print('|______________________________________________________________|')
 
     location = get_location()
@@ -148,6 +150,8 @@ def main() -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
     date = get_date()
     os.system('cls' if os.name == 'nt' else 'clear')
+
+    print('Got it, looking for appointments...')
 
     while True:
         result = get(location, appointment_type, num_people, date)
@@ -165,7 +169,7 @@ def main() -> None:
                 break
             else:
                 # should probably figure out the way to print system messages on Linux
-                print(f'Appointment found on {result}          ')
+                print(f'Appointment found on {result}          ', end='\r')
                 # break
         time.sleep(5)
 
