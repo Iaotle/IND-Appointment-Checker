@@ -2,6 +2,7 @@ import requests # requires requests component
 import json
 import time
 import re
+import os
 
 
 def get(location, type, people, date):
@@ -12,14 +13,15 @@ def get(location, type, people, date):
     #print(js)
     if (len(js['data']) > 0):
         earliestdate = js['data'][0]['date']
-        print('Earliest appointment: ' + earliestdate, end='\r')
+        earliesttime = js['data'][0]['startTime']
+        print('Earliest appointment: ' + earliestdate + ' at ' + earliesttime + '                ', end='\r')
         #print(url)
         if (earliestdate < date):
-            return earliestdate
+            return earliestdate + ' at ' + earliesttime
         else:
             return 0
     else:
-        print('no appointments available')
+        print('No appointments currently available           ', end='\r')
         return 0
 
 
@@ -91,10 +93,10 @@ def get_num_people():
 
     return people
 
+regex = '^([2-9][0-9][0-9][0-9])-([1-9]|0[1-9]|1[0-2])-([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1])$'
 
 def get_date():
     # thanks https://stackoverflow.com/questions/4709652/python-regex-to-match-dates
-    regex = '^([2-9][0-9][0-9][0-9])-([1-9]|0[1-9]|1[0-2])-([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1])$'
 
     print('Before which date would you like to have the appointment? (yyyy-mm-dd)')
     date = input()
@@ -104,18 +106,27 @@ def get_date():
 
     return date
 
+
 if __name__ == '__main__':
-    print('IND Appointment Checker by Iaotle\n')
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print('|‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾|')
+    print('| IND Appointment Checker by Iaotle |')
+    print('|___________________________________|')
 
     location = get_location()
+    os.system('cls' if os.name == 'nt' else 'clear')
     type = get_type()
+    os.system('cls' if os.name == 'nt' else 'clear')
     people = get_num_people()
+    os.system('cls' if os.name == 'nt' else 'clear')
     date = get_date()
+    os.system('cls' if os.name == 'nt' else 'clear')
 
+    print("Got it. Looking for appointments...")
     while 1:
-        print('Earliest appointment', end='\x1b[1K\r')
         result = get(location, type, people, date)
         if result:
-            print("Appointment found on " + result) # todo popup
-            break
+            print("Appointment found on " + result + "              ")
+            print('\a') # makes a beep sound
+            # break
         time.sleep(5)
