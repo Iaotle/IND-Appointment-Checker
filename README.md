@@ -9,7 +9,11 @@ If the script finds an appointment before your desired appointment date, it will
 
 (Keep in mind this only checks for available appointments, you have to book it yourself)
 
+
+This script requires the `requests` library for python. Use `pip install requests` to install. Tested on python3.10.
+
 ---
-© Vadim Isakov, Nick Veld, iikotelnikov
+© Vadim Isakov, Nick Veld, Ilya Kotelnikov
+
 
 Licensed under the [GNU General Public License](LICENSE)
