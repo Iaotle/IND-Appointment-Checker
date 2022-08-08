@@ -21,6 +21,7 @@ POSSIBLE_LOCATION_LIST = [
     'ZW',
     'DB',
     'fa24ccf0acbc76a7793765937eaee440',  # lol
+    '6b425ff9f87de136a36b813cccf26e23', # Haarlem
 ]
 POSSIBLE_APPOINTMENT_TYPE_LIST = [
     'DOC',
@@ -78,7 +79,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
 
 
 def get_location() -> str:
-    regex = '^[1-7]$'
+    regex = '^[1-8]$'
 
     print('Which desk do you need?')
     print('1. Amsterdam')
@@ -88,6 +89,7 @@ def get_location() -> str:
     print('5. Zwolle')
     print('6. Den Bosch')
     print('7. Expatcenter Utrecht')
+    print('8. Haarlem')
     location = input()
     while not re.match(regex, location):
         print('invalid appointment location, try again')
