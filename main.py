@@ -7,7 +7,7 @@ import re
 import time
 import urllib.request
 import warnings
-
+import ssl
 
 class ExternalResourceHasChanged(Warning):
     """Something has been changed on the IND resource"""
@@ -31,13 +31,16 @@ POSSIBLE_APPOINTMENT_TYPE_LIST = [
 
 
 def get(location: str, appointment_type: str, num_people: str, date: str) -> str:
+    myssl = ssl.create_default_context()
+    myssl.check_hostname=False
+    myssl.verify_mode=ssl.CERT_NONE
     # Not f-string because in such manner
     # it is easier to copy the template into the browser address line
     url = 'https://oap.ind.nl/oap/api/desks/{}/slots/?productKey={}&persons={}'.format(
         location, appointment_type, num_people,
     )
-    # print('Requesting', url)
-    with urllib.request.urlopen(url) as web_content:
+    #  print('Requesting', url)
+    with urllib.request.urlopen(url,context=myssl) as web_content:
         response = web_content.read()
     response = response[6:]  # Some closing brackets are returned in the start of the response
 
