@@ -74,7 +74,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     if (earliest_date < date):
         return str(earliest_date)
     else:
-        print("Earliest appointment on " + str(earliest_date), end='\r')
+        print("Earliest appointment for " + appointment_type +  " at " + location + " for " + num_people + " on " + str(earliest_date), end='\r')
         return ""
 
 
@@ -168,7 +168,7 @@ def main() -> None:
             elif platform.system() == 'Darwin':
                 os.system(
                     "osascript -e 'Tell application \"System Events\""
-                    + " to display dialog \"Appointment found on "+ result
+                    + " to display dialog \"Appointment found on "+ result + " at " + location + " for " + appointment_type + " for " + num_people
                     + "\" with title \"Task completed successfully\"'"
                 )
                 break
