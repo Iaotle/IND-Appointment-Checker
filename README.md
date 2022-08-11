@@ -13,7 +13,7 @@ If the script finds an appointment before your desired appointment date, it will
 This script requires the `requests` library for python. Use `pip install requests` to install. Tested on python3.10.
 
 ---
-© Vadim Isakov, Nick Veld, Ilya Kotelnikov
+© Vadim Isakov, Nick Veld, Ilya Kotelnikov, Mitul Shah
 
 
 Licensed under the [GNU General Public License](LICENSE)
