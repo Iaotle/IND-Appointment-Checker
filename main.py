@@ -76,7 +76,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
         return earliest_date
     else:
         earliest_datetime = earliest_date + ' ' + earliest_time
-        print('Earliest appointment on ' + earliest_datetime)
+        print('Earliest appointment for ' + appointment_type + ' at ' + location + ' for ' + num_people + ' on ' + earliest_datetime)
         return ""
 
 
@@ -165,6 +165,7 @@ def main() -> None:
                 os.system(
                     "osascript -e 'Tell application \"System Events\""
                     + " to display dialog \"Appointment found on " + result
+                    + " at " + location + " for " + appointment_type + " for " + num_people
                     + "\" with title \"Task completed successfully\"'"
                 )
                 break
