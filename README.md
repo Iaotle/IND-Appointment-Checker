@@ -45,6 +45,6 @@ If you have a Python interpreter you can do the following steps (otherwise read 
    6. Other options can be left as-is.
 
 ---
-© Vadim Isakov and Nick Veld
+© Vadim Isakov, Nick Veld, Ilya Kotelnikov
 
 Licensed under the [GNU General Public License](LICENSE)
