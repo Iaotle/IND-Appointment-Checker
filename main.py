@@ -39,7 +39,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     print('Requesting', url)
     with urllib.request.urlopen(url) as web_content:
         response = web_content.read()
-    response = response[6:]  # Some closing brackets is returned in the start of the response
+    response = response[6:]  # Some closing brackets are returned in the start of the response
 
     js = json.loads(response)
     try:
@@ -62,6 +62,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
         earliest_date = earliest_appointment_info['date']
     except KeyError:
         raise ExternalResourceHasChanged('The IND resource has changed the appointment scheme.')
+    earliest_time = earliest_appointment_info['startTime']
 
     if (
             datetime.datetime.strptime(earliest_date, '%Y-%m-%d')
@@ -69,6 +70,8 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     ):
         return earliest_date
     else:
+        earliest_datetime = earliest_date + ' ' + earliest_time
+        print('Earliest appointment on ' + earliest_datetime)
         return ""
 
 
@@ -134,12 +137,17 @@ def get_date() -> str:
 
 
 def main() -> None:
-    print('IND Appointment Checker by Iaotle and NickVeld\n')
+    print('|‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾|')
+    print('|                    IND Appointment Checker                   |')
+    print('|             by Iaotle, NickVeld and iikotelnikov             |')
+    print('|______________________________________________________________|')
 
     location = get_location()
     appointment_type = get_type()
     num_people = get_num_people()
     date = get_date()
+
+    print('Got it, looking for appointments...')
 
     while True:
         result = get(location, appointment_type, num_people, date)
@@ -150,13 +158,14 @@ def main() -> None:
             elif platform.system() == 'Darwin':
                 os.system(
                     "osascript -e 'Tell application \"System Events\""
-                    + " to display dialog \"Appointment found on "+ str(result)
+                    + " to display dialog \"Appointment found on " + result
                     + "\" with title \"Task completed successfully\"'"
                 )
                 break
             else:
                 # should probably figure out the way to print system messages on Linux
                 print(f'Appointment found on {result}')
+                break
         time.sleep(5)
 
 
