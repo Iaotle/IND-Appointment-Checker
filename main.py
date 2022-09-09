@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import platform
+import ssl
 import re
 import time
 import urllib.request
@@ -31,13 +32,16 @@ POSSIBLE_APPOINTMENT_TYPE_LIST = [
 
 
 def get(location: str, appointment_type: str, num_people: str, date: str) -> str:
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
     # Not f-string because in such manner
     # it is easier to copy the template into the browser address line
     url = 'https://oap.ind.nl/oap/api/desks/{}/slots/?productKey={}&persons={}'.format(
         location, appointment_type, num_people,
     )
     print('Requesting', url)
-    with urllib.request.urlopen(url) as web_content:
+    with urllib.request.urlopen(url, context=ssl_context) as web_content:
         response = web_content.read()
     response = response[6:]  # Some closing brackets are returned in the start of the response
 
