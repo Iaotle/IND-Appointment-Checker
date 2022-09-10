@@ -8,28 +8,82 @@ import re
 import time
 import urllib.request
 import warnings
+from typing import List
 
 
 class ExternalResourceHasChanged(Warning):
     """Something has been changed on the IND resource"""
 
 
-POSSIBLE_LOCATION_LIST = [
+MAX_PEOPLE_NUMBER = 6
+
+IND_WEBSITE_LOCATION_NAME_LIST = [
+    'IND Amsterdam',
+    'IND Den Haag',
+    'IND Zwolle',
+    'IND Den Bosch',
+]
+IND_WEBSITE_LOCATION_CODE_LIST = [
     'AM',
     'DH',
-    'RO',
-    'UT',
     'ZW',
     'DB',
-    'fa24ccf0acbc76a7793765937eaee440',  # lol
-    '6b425ff9f87de136a36b813cccf26e23', # Haarlem
 ]
-POSSIBLE_APPOINTMENT_TYPE_LIST = [
+assert len(IND_WEBSITE_LOCATION_NAME_LIST) == len(IND_WEBSITE_LOCATION_CODE_LIST), (
+    f'{len(IND_WEBSITE_LOCATION_NAME_LIST)} == {len(IND_WEBSITE_LOCATION_CODE_LIST)} is not true'
+)
+IND_WEBSITE_AUX_LOCATION_NAME_LIST = [
+    'IND Rijswijk (Collection)',
+    'IND Haarlem (Biometrics)',
+    'IND Brabanthallen - Den Bosch (Endorsement sticker)',
+    'IND Rotterdam (Removed?)',
+    'IND Utrecht (Removed?)',
+    'Expatcenter Utrecht (Always no slots?)',
+]
+IND_WEBSITE_AUX_LOCATION_CODE_LIST = [
+    'e1afaa1ca15c1778e972efb79ce63633',
+    '6b425ff9f87de136a36b813cccf26e23',
+    '87d19bfc2e1b572ac3aab17032ed11dc',
+    'RO',
+    'UT',
+    'fa24ccf0acbc76a7793765937eaee440',
+]
+assert len(IND_WEBSITE_AUX_LOCATION_NAME_LIST) == len(IND_WEBSITE_AUX_LOCATION_CODE_LIST), (
+    f'{len(IND_WEBSITE_AUX_LOCATION_NAME_LIST)} == {len(IND_WEBSITE_AUX_LOCATION_CODE_LIST)}'
+    ' is not true'
+)
+EXTERNAL_WEBSITE_LOCATION_NAME_LIST = [
+    'Expatcenter Rotterdam ( https://rotterdamexpatcentre.nl/appointment/ind-appointment/ )',
+]
+EXTERNAL_WEBSITE_LOCATION_CODE_LIST = [
+    'https://calendly.com/api/booking/event_types/{appointment_type}/calendar/range'
+    '?timezone=Europe%2FBerlin&embed_domain=rotterdamexpatcentre.nl'
+    '&range_start={date_range_start}&range_end={date_range_end}',
+]
+assert len(EXTERNAL_WEBSITE_LOCATION_NAME_LIST) == len(EXTERNAL_WEBSITE_LOCATION_CODE_LIST), (
+    f'{len(EXTERNAL_WEBSITE_LOCATION_NAME_LIST)} == {len(EXTERNAL_WEBSITE_LOCATION_CODE_LIST)}'
+    ' is not true'
+)
+
+APPOINTMENT_TYPE_NAME_LIST = [
+    'Collecting your residence document, registration card or original document',
+    'Biometric information (passport photo, fingerprints and signature)',
+    'Residence endorsement sticker',
+    'Return visa',
+]
+APPOINTMENT_TYPE_CODE_LIST = [
     'DOC',
     'BIO',
     'VAA',
     'TKV',
 ]
+assert len(APPOINTMENT_TYPE_NAME_LIST) == len(APPOINTMENT_TYPE_CODE_LIST), (
+    f'{len(APPOINTMENT_TYPE_NAME_LIST)} == {len(APPOINTMENT_TYPE_CODE_LIST)}'
+    ' is not true'
+)
+
+IND_DATE_FORMAT = '%Y-%m-%d'
+INPUT_DATE_FORMAT = '%d-%m-%Y'
 
 
 def get(location: str, appointment_type: str, num_people: str, date: str) -> str:
@@ -70,8 +124,8 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     earliest_time = earliest_appointment_info['startTime']
 
     if (
-            datetime.datetime.strptime(earliest_date, '%Y-%m-%d')
-            < datetime.datetime.strptime(date, '%d-%m-%Y')
+            datetime.datetime.strptime(earliest_date, IND_DATE_FORMAT)
+            < datetime.datetime.strptime(date, INPUT_DATE_FORMAT)
     ):
         return earliest_date
     else:
@@ -83,53 +137,71 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
         return ""
 
 
+def print_user_possible_choices(option_list: List[str], first_number_for_input: int = 1) -> None:
+    for index, location_name in enumerate(option_list, first_number_for_input):
+        print(f'{index}. {location_name}')
+
+
+def get_input_number(max_number_for_input: int) -> int:
+    """Asks user for the right number input if it is wrong
+
+    :param max_number_for_input: number in user input must not exceed this value
+    :return: The integer number based on user's input
+    """
+    index = int(input())
+    while not(1 <= index <= max_number_for_input):
+        print(f'invalid number (it must be between 1 and {max_number_for_input}, try again')
+        index = int(input())
+    return index
+
+
 def get_location() -> str:
-    regex = '^[1-8]$'
+    current_max_location_number = 0
 
     print('Which desk do you need?')
-    print('1. Amsterdam')
-    print('2. Den Haag')
-    print('3. Rotterdam')
-    print('4. Utrecht')
-    print('5. Zwolle')
-    print('6. Den Bosch')
-    print('7. Expatcenter Utrecht')
-    print('8. Haarlem')
-    location = input()
-    while not re.match(regex, location):
-        print('invalid appointment location, try again')
-        location = input()
+    print_user_possible_choices(
+        IND_WEBSITE_LOCATION_NAME_LIST, current_max_location_number + 1,
+    )
+    current_max_location_number += len(IND_WEBSITE_LOCATION_NAME_LIST)
 
-    result = POSSIBLE_LOCATION_LIST[int(location) - 1]
+    print(
+        'The following locations can perform not operations/be removed from the official site'
+        ' so they can not work or show no free slots'
+    )
+    print_user_possible_choices(
+        IND_WEBSITE_AUX_LOCATION_NAME_LIST, current_max_location_number + 1,
+    )
+    current_max_location_number += len(IND_WEBSITE_AUX_LOCATION_NAME_LIST)
+
+    location_index = get_input_number(current_max_location_number) - 1
+
+    if location_index > len(IND_WEBSITE_LOCATION_CODE_LIST):
+        location_index -= len(IND_WEBSITE_LOCATION_CODE_LIST)
+        result = IND_WEBSITE_AUX_LOCATION_CODE_LIST[location_index]
+    else:
+        result = IND_WEBSITE_LOCATION_CODE_LIST[location_index]
     return result
 
 
 def get_type() -> str:
-    regex = '^[1-4]$'
+    current_max_appointment_type_number = 0
 
     print('What kind of appointment do you want to make?')
-    print('1. Collecting your residence document, registration card or original document')
-    print('2. Biometric information (passport photo, fingerprints and signature)')
-    print('3. Residence endorsement sticker')
-    print('4. Return visa')
-    appointment_type = input()
+    print_user_possible_choices(APPOINTMENT_TYPE_NAME_LIST, 1)
+    current_max_appointment_type_number += len(APPOINTMENT_TYPE_CODE_LIST)
 
-    while not re.match(regex, appointment_type):
-        print('invalid appointment type, try again')
-        appointment_type = input()
+    appointment_type_index = get_input_number(current_max_appointment_type_number) - 1
 
-    result = POSSIBLE_APPOINTMENT_TYPE_LIST[int(appointment_type) - 1]
+    result = APPOINTMENT_TYPE_CODE_LIST[appointment_type_index]
     return result
 
 
 def get_num_people() -> str:
     print('How many people?')
-    num_people = input()
-    while not re.match('^[1-6]$', num_people):
-        print('max 6 people, try again')
-        num_people = input()
 
-    return num_people
+    num_people = get_input_number(MAX_PEOPLE_NUMBER)
+
+    return str(num_people)
 
 
 def get_date() -> str:
