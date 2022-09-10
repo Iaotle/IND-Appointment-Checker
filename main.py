@@ -76,7 +76,10 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
         return earliest_date
     else:
         earliest_datetime = earliest_date + ' ' + earliest_time
-        print('Earliest appointment for ' + appointment_type + ' at ' + location + ' for ' + num_people + ' person(s) on: ' + earliest_datetime)
+        print(
+            'Earliest appointment for ' + appointment_type + ' at ' + location
+            + ' for ' + num_people + ' person(s) on: ' + earliest_datetime
+        )
         return ""
 
 
@@ -153,25 +156,34 @@ def main() -> None:
     num_people = get_num_people()
     date = get_date()
 
-    print('Got it, looking for appointments...')
+    print(
+        'Got it, looking for appointments for'
+        f' {appointment_type} at {location} for {num_people} person(s)'
+    )
 
     while True:
         result = get(location, appointment_type, num_people, date)
         if result:
+            notification_content = (
+                'You can now book an appointment for'
+                f' {appointment_type} at {location} for {num_people} person(s) on {result}'
+            )
+            notification_title = 'Slot available: {result} !'
+
+            print(notification_content)  # Application execution history + fallback
+
             if platform.system() == 'Windows':
-                ctypes.windll.user32.MessageBoxW(0, result, 'Appointment found on ' + result, 1)
+                ctypes.windll.user32.MessageBoxW(0, notification_title, notification_content, 1)
                 break
             elif platform.system() == 'Darwin':
                 os.system(
                     "osascript -e 'Tell application \"System Events\""
-                    + " to display dialog \"You can now book an appointment for "
-                    + appointment_type + " at " + location + " for " + num_people
-                    + " person(s) on " + result + "\" with title \"Slot available!\"'"
+                    f" to display dialog \"{notification_content}\""
+                    f" with title \"{notification_title}\"'"
                 )
                 break
             else:
                 # should probably figure out the way to print system messages on Linux
-                print(f'Appointment found on {result}')
                 break
         time.sleep(5)
 
