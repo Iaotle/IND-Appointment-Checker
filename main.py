@@ -83,7 +83,7 @@ assert len(APPOINTMENT_TYPE_NAME_LIST) == len(APPOINTMENT_TYPE_CODE_LIST), (
 )
 
 IND_DATE_FORMAT = '%Y-%m-%d'
-INPUT_DATE_FORMAT = '%d-%m-%Y'
+INPUT_DATE_FORMAT = '%Y-%m-%d'
 
 
 def get(location: str, appointment_type: str, num_people: str, date: str) -> str:
@@ -206,12 +206,12 @@ def get_num_people() -> str:
 
 def get_date() -> str:
     # thanks https://stackoverflow.com/questions/4709652/python-regex-to-match-dates
-    regex = '^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1])-([1-9]|0[1-9]|1[0-2])-([2-9][0-9][0-9][0-9])$'
+    regex = '^([2-9][0-9][0-9][0-9])-([1-9]|0[1-9]|1[0-2])-([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0-1])$'
 
-    print('Before which date would you like to have the appointment? (dd-mm-yyyy)')
+    print('Before which date would you like to have the appointment? (yyyy-mm-dd)')
     appointment_date = input()
     while not re.match(regex, appointment_date):
-        print('invalid date, format is dd-mm-yyyy')
+        print('invalid date, format is yyyy-mm-dd')
         appointment_date = input()
 
     return appointment_date
