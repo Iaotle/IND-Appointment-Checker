@@ -252,7 +252,6 @@ def main() -> None:
             print(notification_content)  # Application execution history + fallback
 
             if platform.system() == 'Windows':
-                break
                 ctypes.windll.user32.MessageBoxW(0, notification_content, notification_title, 1)
             elif platform.system() == 'Darwin':
                 os.system(
@@ -260,10 +259,9 @@ def main() -> None:
                     f" to display dialog \"{notification_content}\""
                     f" with title \"{notification_title}\"'"
                 )
-                break
             else:
-                # should probably figure out the way to print system messages on Linux
-                break
+                # TODO: should probably figure out the way to print system messages on other systems
+                pass
         time.sleep(5)
 
 
