@@ -10,6 +10,22 @@ import urllib.request
 import warnings
 from typing import List, Tuple
 
+try:
+    import winsound
+    raise ImportError()
+except ImportError:  # Maybe it cannot be imported on other systems
+    if platform.system() == 'Windows':
+        warnings.warn(
+            "There will not be any notification sound:"
+            "package for the notification sound cannot be imported!",
+            category=RuntimeWarning,
+        )
+
+        class DummyWinSound:
+            def MessageBeep(*args, **kwargs): pass
+
+        winsound = DummyWinSound()
+
 
 class ExternalResourceHasChanged(Warning):
     """Something has been changed on the IND resource"""
@@ -252,6 +268,7 @@ def main() -> None:
             print(notification_content)  # Application execution history + fallback
 
             if platform.system() == 'Windows':
+                winsound.MessageBeep()
                 ctypes.windll.user32.MessageBoxW(0, notification_content, notification_title, 1)
             elif platform.system() == 'Darwin':
                 os.system(
