@@ -176,7 +176,7 @@ def get_location() -> Tuple[str, str]:
 
     location_index = get_input_number(current_max_location_number) - 1
 
-    if location_index > len(IND_WEBSITE_LOCATION_CODE_LIST):
+    if location_index >= len(IND_WEBSITE_LOCATION_CODE_LIST):
         location_index -= len(IND_WEBSITE_LOCATION_CODE_LIST)
         result = (
             IND_WEBSITE_AUX_LOCATION_CODE_LIST[location_index],
