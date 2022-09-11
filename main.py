@@ -8,7 +8,7 @@ import re
 import time
 import urllib.request
 import warnings
-from typing import List
+from typing import List, Tuple
 
 
 class ExternalResourceHasChanged(Warning):
@@ -122,19 +122,20 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
     except KeyError:
         raise ExternalResourceHasChanged('The IND resource has changed the appointment scheme.')
     earliest_time = earliest_appointment_info['startTime']
+    date_object = datetime.datetime.strptime(date, INPUT_DATE_FORMAT)
+
 
     if (
-            datetime.datetime.strptime(earliest_date, IND_DATE_FORMAT)
-            < datetime.datetime.strptime(date, INPUT_DATE_FORMAT)
+            datetime.datetime.strptime(earliest_date, IND_DATE_FORMAT) <= date_object
     ):
         return earliest_date
     else:
         earliest_datetime = earliest_date + ' ' + earliest_time
         print(
-            'Earliest appointment for ' + appointment_type + ' at ' + location
-            + ' for ' + num_people + ' person(s) on: ' + earliest_datetime
+            f'Earliest appointment for {appointment_type}'
+            f' for {num_people} person(s) is on {earliest_datetime} but it is too late :('
         )
-        return ""
+        return ''
 
 
 def print_user_possible_choices(option_list: List[str], first_number_for_input: int = 1) -> None:
@@ -155,7 +156,7 @@ def get_input_number(max_number_for_input: int) -> int:
     return index
 
 
-def get_location() -> str:
+def get_location() -> Tuple[str, str]:
     current_max_location_number = 0
 
     print('Which desk do you need?')
@@ -177,9 +178,15 @@ def get_location() -> str:
 
     if location_index > len(IND_WEBSITE_LOCATION_CODE_LIST):
         location_index -= len(IND_WEBSITE_LOCATION_CODE_LIST)
-        result = IND_WEBSITE_AUX_LOCATION_CODE_LIST[location_index]
+        result = (
+            IND_WEBSITE_AUX_LOCATION_CODE_LIST[location_index],
+            IND_WEBSITE_AUX_LOCATION_NAME_LIST[location_index],
+        )
     else:
-        result = IND_WEBSITE_LOCATION_CODE_LIST[location_index]
+        result = (
+            IND_WEBSITE_LOCATION_CODE_LIST[location_index],
+            IND_WEBSITE_LOCATION_NAME_LIST[location_index],
+        )
     return result
 
 
@@ -223,14 +230,14 @@ def main() -> None:
     print('|       by Iaotle, NickVeld, iikotelnikov, and Mitul Shah      |')
     print('|______________________________________________________________|')
 
-    location = get_location()
+    location, location_to_print = get_location()
     appointment_type = get_type()
     num_people = get_num_people()
     date = get_date()
 
     print(
         'Got it, looking for appointments for'
-        f' {appointment_type} at {location} for {num_people} person(s)'
+        f' {appointment_type} for {num_people} person(s) at {location_to_print}'
     )
 
     while True:
@@ -238,15 +245,15 @@ def main() -> None:
         if result:
             notification_content = (
                 'You can now book an appointment for'
-                f' {appointment_type} at {location} for {num_people} person(s) on {result}'
+                f' {appointment_type} for {num_people} person(s) on {result} at {location_to_print}'
             )
-            notification_title = 'Slot available: {result} !'
+            notification_title = f'Slot available: {result} !'
 
             print(notification_content)  # Application execution history + fallback
 
             if platform.system() == 'Windows':
-                ctypes.windll.user32.MessageBoxW(0, notification_title, notification_content, 1)
                 break
+                ctypes.windll.user32.MessageBoxW(0, notification_content, notification_title, 1)
             elif platform.system() == 'Darwin':
                 os.system(
                     "osascript -e 'Tell application \"System Events\""
