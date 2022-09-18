@@ -1,3 +1,4 @@
+import calendar
 import ctypes
 import datetime
 import json
@@ -98,48 +99,173 @@ assert len(APPOINTMENT_TYPE_NAME_LIST) == len(APPOINTMENT_TYPE_CODE_LIST), (
     ' is not true'
 )
 
+CALENDLY_API_RESOURCE_PATH = 'https://calendly.com/api/booking/'
+IND_API_URL_TEMPLATE = 'https://oap.ind.nl/oap/api/desks/{}/slots/?productKey={}&persons={}'
+
 IND_DATE_FORMAT = '%Y-%m-%d'
 INPUT_DATE_FORMAT = '%Y-%m-%d'
+
+
+def url_generation(
+        location: str, appointment_type: str, num_people: str,
+        date: str, date_object: datetime.datetime,
+) -> str:
+    if location.startswith('http'):
+        if num_people != '1':
+            raise NotImplementedError(
+                'For now the search for only one person is implemented for this location'
+            )
+
+        if location.startswith(CALENDLY_API_RESOURCE_PATH):
+            if appointment_type == 'DOC':
+                appointment_type = '3392b90f-9bd5-49e0-9287-b98b8f571286'
+            elif appointment_type == 'BIO':
+                appointment_type = '449e482a-55b0-4bb4-972e-0dadc4361150'
+            elif appointment_type == 'VAA':
+                appointment_type = 'd255af53-075d-4e6b-93a7-574410220d88'
+            else:
+                raise ValueError('This type of appointment is not provided by this location')
+
+            print(
+                'NOTE: Only the range from the first to the last day'
+                ' of the month you typed will be watched'
+            )
+            (first_day, last_day) = calendar.monthrange(date_object.year, date_object.month)
+            if INPUT_DATE_FORMAT.endswith('-%d'):
+                month_str = date[:-2]  # Day representation of '-%d' is two-symbol long
+                # The format string adds leading zero if it is necessary
+                date_range_start = month_str + '{:0>2}'.format(first_day)
+                date_range_end = month_str + '{:0>2}'.format(last_day)
+            else:
+                raise NotImplementedError(
+                    'In order this location can be requested a developer must change date range selection'
+                )
+        else:
+            raise NotImplementedError(
+                'In order this location can be requested a developer must add input processing for it'
+            )
+
+        url = location.format(
+            appointment_type=appointment_type, date_range_start=date_range_start, date_range_end=date_range_end
+        )
+    else:
+        # Not f-string because in such manner
+        # it is easier to copy the template into the browser address line
+        url = IND_API_URL_TEMPLATE.format(
+            location, appointment_type, num_people,
+        )
+
+    return url
+
+
+def parse_response(response: str, location: str) -> Tuple[str, str]:
+    if location.startswith(CALENDLY_API_RESOURCE_PATH):
+        check_this_slot_is_available = lambda slot: slot['status'] == 'available'
+        data_list_key = 'days'
+        day_info_key = 'date'
+        slot_list_key = 'spots'
+        start_time_key = 'start_time'
+    else:
+        check_this_slot_is_available = lambda slot: True  # Busy slots are not returned
+        data_list_key = 'data'
+        day_info_key = 'date'
+        slot_list_key = ''
+        start_time_key = 'startTime'
+
+        # Some closing brackets are returned in the start of the response
+        response = response[6:]
+
+    response_parsed_object = json.loads(response)
+    try:
+        response_parsed_object = response_parsed_object[data_list_key]
+    except KeyError:
+        raise ExternalResourceHasChanged(
+            f'The resource is totally different, no "{data_list_key}" in the response.'
+        )
+
+    if not isinstance(response_parsed_object, list):
+        raise ExternalResourceHasChanged('The resource has changed the data scheme.')
+    if not response_parsed_object:
+        warnings.warn(
+            'There is no appointment slots at all. It is very suspicious.'
+            ' But it can be a temporary problem',
+            category=ExternalResourceHasChanged,
+        )
+        return '', ''
+
+    for appointment_info in response_parsed_object:
+        try:
+            is_available = check_this_slot_is_available(appointment_info)
+        except KeyError:
+            raise ExternalResourceHasChanged('The resource has changed an availability info place.')
+
+        if is_available:
+            earliest_appointment_info = appointment_info
+            break
+    else:
+        # No available slot
+        return '', ''
+
+    try:
+        earliest_date = earliest_appointment_info[day_info_key]
+    except KeyError:
+        raise ExternalResourceHasChanged('The resource has changed the appointment scheme.')
+
+    if location.startswith(CALENDLY_API_RESOURCE_PATH):
+        try:
+            slot_list = earliest_appointment_info[slot_list_key]
+        except KeyError:
+            raise ExternalResourceHasChanged('The resource has changed the day info scheme.')
+
+        for appointment_info in slot_list:
+            try:
+                is_available = check_this_slot_is_available(appointment_info)
+            except KeyError:
+                raise ExternalResourceHasChanged(
+                    'The resource has changed an slot availability info place.'
+                )
+
+            if is_available:
+                earliest_appointment_info = appointment_info
+                break
+
+    try:
+        date_string = earliest_appointment_info[start_time_key]
+    except KeyError:
+        raise ExternalResourceHasChanged('The resource has changed the slot scheme.')
+
+    if location.startswith(CALENDLY_API_RESOURCE_PATH):
+        if '+' in date_string:
+            date_string = date_string[:date_string.rfind('+')]
+        earliest_time = date_string[len(earliest_date) + len('T') + 1:]
+    else:
+        earliest_time = date_string
+
+    return earliest_date, earliest_time
 
 
 def get(location: str, appointment_type: str, num_people: str, date: str) -> str:
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
     ssl_context.verify_mode = ssl.CERT_NONE
-    # Not f-string because in such manner
-    # it is easier to copy the template into the browser address line
-    url = 'https://oap.ind.nl/oap/api/desks/{}/slots/?productKey={}&persons={}'.format(
-        location, appointment_type, num_people,
-    )
-    print('Requesting', url)
-    with urllib.request.urlopen(url, context=ssl_context) as web_content:
-        response = web_content.read()
-    response = response[6:]  # Some closing brackets are returned in the start of the response
 
-    js = json.loads(response)
-    try:
-        js = js['data']
-    except KeyError:
-        raise ExternalResourceHasChanged(
-            'The IND resource is totally different, no "data" in the response.'
-        )
-    if not isinstance(js, list):
-        raise ExternalResourceHasChanged('The IND resource has changed the data scheme.')
-    if not js:
-        warnings.warn(
-            'There is no appointment slots at all. It is very suspicious.'
-            ' But it can be a temporary problem',
-            category=ExternalResourceHasChanged,
-        )
-        return ''
-    earliest_appointment_info = js[0]
-    try:
-        earliest_date = earliest_appointment_info['date']
-    except KeyError:
-        raise ExternalResourceHasChanged('The IND resource has changed the appointment scheme.')
-    earliest_time = earliest_appointment_info['startTime']
     date_object = datetime.datetime.strptime(date, INPUT_DATE_FORMAT)
 
+    url = url_generation(location, appointment_type, num_people, date, date_object)
+
+    print('Requesting', url)
+    request = urllib.request.Request(
+        url, data=None,
+        headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0'
+        }
+    )
+    with urllib.request.urlopen(request, context=ssl_context) as web_content:
+        response = web_content.read()
+
+    earliest_date, earliest_time = parse_response(response, location)
+    if earliest_date == '':
+        return ''
 
     if (
             datetime.datetime.strptime(earliest_date, IND_DATE_FORMAT) <= date_object
@@ -190,14 +316,29 @@ def get_location() -> Tuple[str, str]:
     )
     current_max_location_number += len(IND_WEBSITE_AUX_LOCATION_NAME_LIST)
 
+    print(
+        'For the following locations the registration is conducted on a separate website'
+    )
+    print_user_possible_choices(
+        EXTERNAL_WEBSITE_LOCATION_NAME_LIST, current_max_location_number + 1,
+    )
+    current_max_location_number += len(EXTERNAL_WEBSITE_LOCATION_NAME_LIST)
+
     location_index = get_input_number(current_max_location_number) - 1
 
     if location_index >= len(IND_WEBSITE_LOCATION_CODE_LIST):
         location_index -= len(IND_WEBSITE_LOCATION_CODE_LIST)
-        result = (
-            IND_WEBSITE_AUX_LOCATION_CODE_LIST[location_index],
-            IND_WEBSITE_AUX_LOCATION_NAME_LIST[location_index],
-        )
+        if location_index >= len(IND_WEBSITE_AUX_LOCATION_CODE_LIST):
+            location_index -= len(IND_WEBSITE_AUX_LOCATION_CODE_LIST)
+            result = (
+                EXTERNAL_WEBSITE_LOCATION_CODE_LIST[location_index],
+                EXTERNAL_WEBSITE_LOCATION_NAME_LIST[location_index],
+            )
+        else:
+            result = (
+                IND_WEBSITE_AUX_LOCATION_CODE_LIST[location_index],
+                IND_WEBSITE_AUX_LOCATION_NAME_LIST[location_index],
+            )
     else:
         result = (
             IND_WEBSITE_LOCATION_CODE_LIST[location_index],
@@ -243,7 +384,7 @@ def get_date() -> str:
 def main() -> None:
     print('|‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾|')
     print('|                    IND Appointment Checker                   |')
-    print('|       by Iaotle, NickVeld, iikotelnikov, and Mitul Shah      |')
+    print('|       by NickVeld, Iaotle, iikotelnikov, and Mitul Shah      |')
     print('|______________________________________________________________|')
 
     location, location_to_print = get_location()
