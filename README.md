@@ -1,4 +1,4 @@
-# IND Appointment Check
+# IND Appointment Checker
 
 (On Python)
 
