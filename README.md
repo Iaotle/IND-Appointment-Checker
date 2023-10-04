@@ -1,6 +1,5 @@
 # IND Appointment Checker
-
-(On Python)
+[Download Latest Release](https://github.com/Iaotle/IND-Appointment-Checker/releases/latest)
 
 ## Are you tired of having an appointment scheduled in 2 months?
 
