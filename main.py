@@ -253,7 +253,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
 
     url = url_generation(location, appointment_type, num_people, date, date_object)
 
-    print('Requesting', url)
+    # print('Requesting', url)
     request = urllib.request.Request(
         url, data=None,
         headers={
@@ -296,7 +296,6 @@ def get_input_number(max_number_for_input: int) -> int:
         print(f'invalid number (it must be between 1 and {max_number_for_input}, try again')
         index = int(input())
     return index
-
 
 def get_location() -> Tuple[str, str]:
     current_max_location_number = 0
@@ -402,7 +401,8 @@ def main() -> None:
         if result:
             notification_content = (
                 'You can now book an appointment for'
-                f' {appointment_type} for {num_people} person(s) on {result} at {location_to_print}'
+                f' {appointment_type} for {num_people} person(s) on {result} at {location_to_print}.'
+				f' Go to https://oap.ind.nl/oap/en/#/{appointment_type} to book the appointment.'
             )
             notification_title = f'Slot available: {result} !'
 
