@@ -1,5 +1,4 @@
 # IND Appointment Checker
-Download Latest Release: [Windows](https://github.com/Iaotle/IND-Appointment-Checker/releases/latest/download/windows.exe) [Linux](https://github.com/Iaotle/IND-Appointment-Checker/releases/latest/download/linux)
 
 ## Are you tired of having an appointment scheduled in 2 months?
 
@@ -8,10 +7,14 @@ It will check every 5 seconds, which will usually guarantee you an appointment t
 
 (Keep in mind this only checks for available appointments, you have to book it yourself)
 
-## Quickstart
 
-Unfortunately, online Python interpreters are blocking network for the code because of abuses.
-So the local interpreter is needed to run this code.
+
+Download Latest Release:
+
+[Windows](https://github.com/Iaotle/IND-Appointment-Checker/releases/latest/download/windows.exe) (due to the tool used to package the release into one file it might be flagged by your antivirus)
+
+[Linux](https://github.com/Iaotle/IND-Appointment-Checker/releases/latest/download/linux)
+## Quickstart
 
 If you have a Python interpreter you can do the following steps (otherwise read the next subsection first):
 
