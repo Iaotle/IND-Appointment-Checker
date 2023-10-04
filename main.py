@@ -308,8 +308,8 @@ def get_location() -> Tuple[str, str]:
     current_max_location_number += len(IND_WEBSITE_LOCATION_NAME_LIST)
 
     print(
-        'The following locations can perform not operations/be removed from the official site'
-        ' so they can not work or show no free slots'
+        'The following locations are not shown on the website,'
+        ' so they are not guaranteed to work.'
     )
     print_user_possible_choices(
         IND_WEBSITE_AUX_LOCATION_NAME_LIST, current_max_location_number + 1,
@@ -384,7 +384,7 @@ def get_date() -> str:
 def main() -> None:
     print('|‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾|')
     print('|                    IND Appointment Checker                   |')
-    print('|       by NickVeld, Iaotle, iikotelnikov, and Mitul Shah      |')
+    print('|       by Iaotle, NickVeld, iikotelnikov, and Mitul Shah      |')
     print('|______________________________________________________________|')
 
     location, location_to_print = get_location()
