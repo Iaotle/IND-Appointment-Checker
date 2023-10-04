@@ -9,7 +9,7 @@ It will check every 5 seconds, which will usually guarantee you an appointment t
 
 
 
-Download Latest Release:
+### Download Latest Release:
 
 [Windows](https://github.com/Iaotle/IND-Appointment-Checker/releases/latest/download/windows.exe) (due to the tool used to package the release into one file it might be flagged by your antivirus)
 
