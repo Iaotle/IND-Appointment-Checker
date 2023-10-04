@@ -1,5 +1,5 @@
 # IND Appointment Checker
-[Download Latest Release](https://github.com/Iaotle/IND-Appointment-Checker/releases/latest)
+Download Latest Release: [Windows](https://github.com/Iaotle/IND-Appointment-Checker/releases/latest/download/windows.exe) [Linux](https://github.com/Iaotle/IND-Appointment-Checker/releases/latest/download/linux)
 
 ## Are you tired of having an appointment scheduled in 2 months?
 
