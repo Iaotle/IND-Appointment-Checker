@@ -100,7 +100,7 @@ assert len(APPOINTMENT_TYPE_NAME_LIST) == len(APPOINTMENT_TYPE_CODE_LIST), (
 )
 
 CALENDLY_API_RESOURCE_PATH = 'https://calendly.com/api/booking/'
-IND_API_URL_TEMPLATE = 'https://oap.ind.nl/oap/api/desks/{}/slots/?productKey={}&persons={}'
+IND_API_URL_TEMPLATE = 'https://oap.ind.nl/oap/api/desks/{}/slots?productKey={}&persons={}'
 
 IND_DATE_FORMAT = '%Y-%m-%d'
 INPUT_DATE_FORMAT = '%Y-%m-%d'
@@ -253,7 +253,7 @@ def get(location: str, appointment_type: str, num_people: str, date: str) -> str
 
     url = url_generation(location, appointment_type, num_people, date, date_object)
 
-    # print('Requesting', url)
+    print('Requesting', url)
     request = urllib.request.Request(
         url, data=None,
         headers={
